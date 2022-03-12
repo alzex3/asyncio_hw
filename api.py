@@ -1,11 +1,16 @@
 import asyncio
+import platform
 from more_itertools import chunked
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+if platform.system() == 'Windows':
+    asyncio.set_event_loop_policy(
+        asyncio.WindowsSelectorEventLoopPolicy()
+    )
 
 
 class StarWarsAPI:
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, aiohttp_session):
+        self.session = aiohttp_session
         self.base_url = 'https://swapi.dev/api/'
 
     async def get_person(self, person_id):
@@ -20,7 +25,7 @@ class StarWarsAPI:
             persons = await asyncio.gather(*tasks)
 
             for person in persons:
-                if await self.is_person_exist(person):
+                if await self.is_exist(person):
                     yield person
 
     async def get_obj_name(self, obj_url):
@@ -33,22 +38,31 @@ class StarWarsAPI:
             else:
                 return ''
 
-    async def get_object(self, person, obj):
-        if person.get(obj):
-            return await self.get_obj_name(person.get(obj))
-        else:
-            return ''
+    async def get_object(self, person, attr):
+        return await self.get_obj_name(person.get(attr))
 
-    async def get_objects_names(self, person, objs):
-        if person.get(objs):
-            tasks = [asyncio.create_task(self.get_obj_name(obj)) for obj in person.get(objs)]
-            objs = await asyncio.gather(*tasks)
-            objects_str = ', '.join(objs)
-            return objects_str
-        else:
-            return ''
+    async def get_objects_names(self, person, attr):
+        tasks = [asyncio.create_task(self.get_obj_name(obj)) for obj in person.get(attr)]
+        objs = await asyncio.gather(*tasks)
+        objects_str = ', '.join(objs)
+        return objects_str
 
     @staticmethod
-    async def is_person_exist(person):
+    async def is_exist(person):
         if person != {'detail': 'Not found'}:
             return True
+
+    # @staticmethod
+    # async def has_attribute(person, attr):
+    #     if person.get(attr):
+    #         return True
+
+    async def get_objs_names(self, person, attr):
+        if type(person.get(attr)) == list:
+            return await self.get_objects_names(person, attr)
+
+        elif type(person.get(attr)) == str:
+            return await self.get_object(person, attr)
+
+        else:
+            return ''
