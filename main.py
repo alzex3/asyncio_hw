@@ -1,6 +1,6 @@
 import asyncio
 
-from main_api import swapi_backup
+from app import swapi_backup
 
 
 if __name__ == '__main__':

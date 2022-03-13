@@ -3,6 +3,7 @@ import platform
 
 from aiohttp.client import ClientSession
 
+from settings import START_PERSON_ID, FINISH_PERSON_ID
 from benchmark import bench
 from api import StarWarsAPI
 from db.database import db_session
@@ -23,9 +24,11 @@ async def swapi_backup():
 
         await db_session.init()
 
-        async for person in api.get_persons(range(10, 15)):
+        async for person in api.get_persons(range(
+                START_PERSON_ID, FINISH_PERSON_ID + 1
+        )):
 
-            resp_person = Person(
+            result_person = Person(
                 id=person.get('id'),
                 birth_year=person.get('birth_year'),
                 eye_color=person.get('eye_color'),
@@ -33,7 +36,7 @@ async def swapi_backup():
                 gender=person.get('gender'),
                 hair_color=person.get('hair_color'),
                 height=person.get('height'),
-                homeworld=await api.get_obj_name(person.get('homeworld')),
+                homeworld=await api.get_object_name(person.get('homeworld')),
                 mass=person.get('mass'),
                 name=person.get('name'),
                 skin_color=person.get('skin_color'),
@@ -42,4 +45,4 @@ async def swapi_backup():
                 vehicles=await api.get_objects_names(person, 'vehicles'),
             )
 
-            await Person.update(person.get('id'), birth_year=person.get('birth_year'))
+            await Person.create(result_person)

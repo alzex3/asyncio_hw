@@ -3,6 +3,8 @@ import platform
 
 from more_itertools import chunked
 
+from settings import REQUESTS_BOTTLE_NECK
+
 
 if platform.system() == 'Windows':
     asyncio.set_event_loop_policy(
@@ -22,14 +24,14 @@ class StarWarsAPI:
             return person
 
     async def get_persons(self, range_person_id):
-        for person_id_chunk in chunked(range_person_id, 15):
+        for person_id_chunk in chunked(range_person_id, REQUESTS_BOTTLE_NECK):
             for person_id in person_id_chunk:
                 person = await asyncio.create_task(self.get_person(person_id))
                 if person != {'detail': 'Not found'}:
                     person['id'] = person_id
                     yield person
 
-    async def get_obj_name(self, obj_url):
+    async def get_object_name(self, obj_url):
         async with self.session.get(obj_url) as resp:
             obj = await resp.json()
             if obj.get('name'):
@@ -38,7 +40,7 @@ class StarWarsAPI:
                 return obj.get('title')
 
     async def get_objects_names(self, person, attr):
-        tasks = [asyncio.create_task(self.get_obj_name(obj_url)) for obj_url in person.get(attr)]
+        tasks = [asyncio.create_task(self.get_object_name(obj_url)) for obj_url in person.get(attr)]
         objs = await asyncio.gather(*tasks)
         objects_str = ', '.join(objs)
         return objects_str

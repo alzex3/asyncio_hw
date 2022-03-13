@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pythonproject"
+name = "async_hw"
 version = "0.1.0"
 description = ""
 authors = ["Alexey Zharinov <87263895+alzex3@users.noreply.github.com>"]

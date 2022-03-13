@@ -1,6 +1,4 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy import update as sqlalchemy_update
-from sqlalchemy.future import select
 
 from db.database import Base, db_session
 
@@ -27,21 +25,3 @@ class Person(Base):
     async def create(cls, person):
         db_session.add(person)
         await db_session.commit()
-
-    @classmethod
-    async def update(cls, person_id, **kwargs):
-        query = (
-            sqlalchemy_update(cls)
-            .where(cls.id == person_id)
-            .values(**kwargs)
-            .execution_options(synchronize_session="fetch")
-        )
-        await db_session.execute(query)
-        await db_session.commit()
-
-    @classmethod
-    async def get(cls, person_id):
-        query = select(cls).where(cls.id == person_id)
-        results = await db_session.execute(query)
-        (result,) = results.one()
-        return result

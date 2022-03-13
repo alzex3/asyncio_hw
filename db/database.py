@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+from settings import PG_DSN
+
 
 Base = declarative_base()
 
@@ -16,14 +18,14 @@ class DatabaseSession:
     async def init(self):
 
         self._engine = create_async_engine(
-            "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/async_hw",
+            PG_DSN,
             echo=True,
         )
 
         self._session = sessionmaker(
             self._engine,
             expire_on_commit=False,
-            class_=AsyncSession
+            class_=AsyncSession,
         )()
 
     async def create_all(self):
