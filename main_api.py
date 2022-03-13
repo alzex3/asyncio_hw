@@ -23,22 +23,23 @@ async def swapi_backup():
 
         await db_session.init()
 
-        async for person in api.get_persons(range(1, 90)):
+        async for person in api.get_persons(range(10, 15)):
 
             resp_person = Person(
+                id=person.get('id'),
                 birth_year=person.get('birth_year'),
                 eye_color=person.get('eye_color'),
-                films=await api.get_objs_names(person, 'films'),
+                films=await api.get_objects_names(person, 'films'),
                 gender=person.get('gender'),
                 hair_color=person.get('hair_color'),
                 height=person.get('height'),
-                homeworld=await api.get_objs_names(person, 'homeworld'),
+                homeworld=await api.get_obj_name(person.get('homeworld')),
                 mass=person.get('mass'),
                 name=person.get('name'),
                 skin_color=person.get('skin_color'),
-                species=await api.get_objs_names(person, 'species'),
-                starships=await api.get_objs_names(person, 'starships'),
-                vehicles=await api.get_objs_names(person, 'vehicles'),
+                species=await api.get_objects_names(person, 'species'),
+                starships=await api.get_objects_names(person, 'starships'),
+                vehicles=await api.get_objects_names(person, 'vehicles'),
             )
 
-            await Person.create(resp_person)
+            await Person.update(person.get('id'), birth_year=person.get('birth_year'))

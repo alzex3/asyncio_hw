@@ -1,6 +1,8 @@
 import asyncio
 import platform
+
 from more_itertools import chunked
+
 
 if platform.system() == 'Windows':
     asyncio.set_event_loop_policy(
@@ -21,11 +23,10 @@ class StarWarsAPI:
 
     async def get_persons(self, range_person_id):
         for person_id_chunk in chunked(range_person_id, 15):
-            tasks = [asyncio.create_task(self.get_person(person_id)) for person_id in person_id_chunk]
-            persons = await asyncio.gather(*tasks)
-
-            for person in persons:
-                if await self.is_exist(person):
+            for person_id in person_id_chunk:
+                person = await asyncio.create_task(self.get_person(person_id))
+                if person != {'detail': 'Not found'}:
+                    person['id'] = person_id
                     yield person
 
     async def get_obj_name(self, obj_url):
@@ -35,34 +36,9 @@ class StarWarsAPI:
                 return obj.get('name')
             elif obj.get('title'):
                 return obj.get('title')
-            else:
-                return ''
-
-    async def get_object(self, person, attr):
-        return await self.get_obj_name(person.get(attr))
 
     async def get_objects_names(self, person, attr):
-        tasks = [asyncio.create_task(self.get_obj_name(obj)) for obj in person.get(attr)]
+        tasks = [asyncio.create_task(self.get_obj_name(obj_url)) for obj_url in person.get(attr)]
         objs = await asyncio.gather(*tasks)
         objects_str = ', '.join(objs)
         return objects_str
-
-    @staticmethod
-    async def is_exist(person):
-        if person != {'detail': 'Not found'}:
-            return True
-
-    # @staticmethod
-    # async def has_attribute(person, attr):
-    #     if person.get(attr):
-    #         return True
-
-    async def get_objs_names(self, person, attr):
-        if type(person.get(attr)) == list:
-            return await self.get_objects_names(person, attr)
-
-        elif type(person.get(attr)) == str:
-            return await self.get_object(person, attr)
-
-        else:
-            return ''

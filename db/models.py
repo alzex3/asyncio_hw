@@ -7,7 +7,6 @@ from db.database import Base, db_session
 
 class Person(Base):
     __tablename__ = "person"
-    __mapper_args__ = {"eager_defaults": True}
 
     id = Column(Integer, primary_key=True)
     birth_year = Column(String(15))
